@@ -1,10 +1,10 @@
-# 🏏 IPL Decoded: From Deliveries to Decisions
+# 🤖 IPL Win Predictor — Machine Learning Edition
 
-> A data-driven deep dive into 10 seasons of IPL cricket (2008–2017). Using Python, Pandas, Matplotlib and Seaborn on 150,000+ ball-by-ball deliveries, this project uncovers who the real run machines are, which death bowlers hold their nerve, which venues favour which teams, and whether winning the toss actually matters.
+> A machine learning model that predicts IPL match winners using historical win rates, toss decisions, venue and team data. Built with Scikit-learn's Random Forest Classifier, trained on 10 seasons of IPL data (2008–2017).
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue?style=flat&logo=python)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-orange?style=flat&logo=scikitlearn)
 ![Pandas](https://img.shields.io/badge/Pandas-2.0-lightblue?style=flat&logo=pandas)
-![Seaborn](https://img.shields.io/badge/Seaborn-Visualization-teal?style=flat)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 ![Status](https://img.shields.io/badge/Status-Complete-brightgreen?style=flat)
 
@@ -12,56 +12,60 @@
 
 ## 📌 Project Overview
 
-This is a Phase 1 portfolio project focused on **Exploratory Data Analysis (EDA)** using real IPL data from Kaggle. The goal is to extract meaningful cricket insights from raw data — answering questions that matter to fans, analysts, and selectors alike.
+This project builds on [IPL Decoded](#) (Phase 1 EDA) by turning descriptive insights into a **predictive model**. Given two teams, a venue, and toss information, the model predicts the likely match winner with a confidence score.
 
-**Dataset:** [IPL Complete Dataset — Kaggle](https://www.kaggle.com/datasets/mnathvijay/ipl-complete-dataset)  
-**Matches analysed:** 636  
-**Deliveries analysed:** 150,460  
-**Seasons covered:** 2008–2017 (10 seasons)
+**Algorithm:** Random Forest Classifier (200 trees)  
+**Matches used:** 626 (cleaned, completed matches only)  
+**Train/Test split:** 80% / 20%  
+**Final Accuracy:** **51.59%**
 
 ---
 
-## 🎯 Key Questions Answered
+## 🎯 Problem Statement
 
-| # | Question | Chart Type |
+> Can we predict which team will win an IPL match using only pre-match information — team names, venue, toss outcome, and historical performance?
+
+This is a **multi-class classification problem** — predicting one winner out of 14 possible IPL teams.
+
+---
+
+## 🧠 Approach
+
+### 1. Baseline Model (Logistic Regression)
+First attempt used only categorical features — team names, venue, toss decision — encoded as numbers.
+**Result: 23.81% accuracy** — only 3x better than random guessing (7% for 14 classes).
+
+### 2. Feature Engineering — The Key Improvement
+The baseline model lacked context. I engineered a critical new feature: **historical win rate**, calculated chronologically for each team *before* every match (avoiding data leakage by never using future match results).
+
+New features added:
+- `team1_winrate` — team 1's win rate from all prior matches
+- `team2_winrate` — team 2's win rate from all prior matches
+- `team1_won_toss` — binary flag for toss outcome
+
+### 3. Upgraded Model (Random Forest)
+Switched from Logistic Regression to a **Random Forest Classifier** (200 trees, max depth 10) — better suited for capturing non-linear patterns across multiple features.
+
+**Result: 51.59% accuracy** — more than **double** the baseline.
+
+---
+
+## 📊 Model Performance
+
+| Metric | Baseline (LogReg) | Final (Random Forest) |
 |---|---|---|
-| 1 | Who are the top 10 run scorers in IPL history? | Horizontal Bar Chart |
-| 2 | Who scores fast AND consistently? | Scatter Plot |
-| 3 | Which teams dominate which venues? | Heatmap |
-| 4 | Who are the best death over bowlers? | Horizontal Bar Chart |
-| 5 | Does winning the toss actually help? | Grouped Bar Chart |
+| Accuracy | 23.81% | **51.59%** |
+| Key features | Team, venue, toss | + Win rate, toss flag |
+| vs Random guess (7%) | 3.4x better | **7.4x better** |
 
----
+### Best Predicted Teams
+- **Rajasthan Royals** — 92% recall (correctly caught 11/12 actual wins)
+- **Mumbai Indians** — 52% recall, 21 test matches (most common team)
+- **Chennai Super Kings** — 59% recall, strong precision (0.62)
 
-## 📊 Charts & Insights
-
-### 1. Top 10 Run Scorers (2008–2017)
-SK Raina leads with 4,548 runs, followed by Virat Kohli (4,423) and Rohit Sharma (4,207). The top 10 are dominated by consistent, long-serving players who played across multiple franchises and seasons.
-
-### 2. Strike Rate vs Batting Average — Who is Truly Elite?
-Using a scatter plot divided into 4 quadrants by average strike rate and average batting average:
-- **Elite (top right):** AB de Villiers, CH Gayle, DA Warner — high average AND high strike rate
-- **Consistent but measured:** V Kohli, G Gambhir — high average, slightly lower strike rate
-- **Outlier:** GJ Maxwell — strike rate of 157 but average of only 25. Classic aggressive but risky batter.
-
-### 3. Venue Win % Heatmap
-- **MI at Eden Gardens: 82%** — Mumbai Indians dominated KKR's home ground
-- **CSK at Feroz Shah Kotla: 83%** — CSK were lethal in Delhi even away from home
-- **KXIP at PCA Stadium: 100%** — Perfect home record at their own ground
-- **RR at Sawai Mansingh: 73%** — Rajasthan Royals were strong at home in Jaipur
-
-### 4. Best Death Over Bowlers (Overs 17–20, min. 60 balls)
-Economy rates that prove class under pressure:
-- 🥇 Sohail Tanvir — **6.73** (most economical)
-- 🥈 SP Narine — **7.44** (mystery spin works even in death!)
-- 🥉 DE Bollinger — **7.44**
-- SL Malinga — **7.57** (the yorker king, confirmed by data)
-
-### 5. Toss Decision vs Match Outcome
-- Winning the toss alone = **51.3% win rate** (barely better than a coin flip)
-- Choosing to **field after winning toss = 55.7% win rate**
-- Choosing to **bat after winning toss = only 45.6% win rate**
-- **Conclusion:** The toss itself doesn't matter much — but fielding first is clearly the smarter IPL strategy.
+### Weakest Predictions
+- **Kochi Tuskers Kerala, Pune Warriors** — short-lived franchises (1–2 seasons), too little training data
+- **Rising Pune Supergiant(s)** — inconsistent spelling in raw Kaggle data across seasons, splitting one team's history into two labels
 
 ---
 
@@ -69,64 +73,69 @@ Economy rates that prove class under pressure:
 
 | Tool | Purpose |
 |---|---|
-| Python 3.13 | Core programming language |
-| Pandas | Data loading, cleaning, aggregation |
-| Matplotlib | Chart drawing and layout |
-| Seaborn | Styled visualisations (heatmap, scatter) |
-| Jupyter Notebook | Interactive coding environment |
+| Python 3.13 | Core language |
+| Pandas / NumPy | Data manipulation |
+| Scikit-learn | LabelEncoder, train/test split, RandomForestClassifier, metrics |
+| Matplotlib / Seaborn | Confusion matrix visualisation |
+| Jupyter Notebook | Development environment |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-IPL-Decoded-From-Deliveries-to-Decisions/
+IPL-Win-Predictor/
 │
-├── ipl_analysis.ipynb       # Main Jupyter notebook with all code
-├── matches.csv              # Match-level data (636 matches)
-├── deliveries.csv           # Ball-by-ball data (150,460 deliveries)
-├── README.md                # This file
-└── LICENSE                  # MIT Licence
+├── ipl_win_predictor.ipynb   # Main notebook — full pipeline
+├── matches.csv                # Match-level dataset
+├── README.md                  # This file
+└── LICENSE                    # MIT Licence
 ```
 
 ---
 
-## 🚀 How to Run This Project
+## 🚀 How to Run
 
-1. **Clone the repository**
 ```bash
-git clone https://github.com/tejeshwini2425/-IPL-Decoded-From-Deliveries-to-Decisions.git
-cd IPL-Decoded-From-Deliveries-to-Decisions
-```
-
-2. **Install dependencies**
-```bash
-pip install pandas matplotlib seaborn jupyter
-```
-
-3. **Launch Jupyter Notebook**
-```bash
+git clone https://github.com/tejeshwini2425/IPL-Win-Predictor.git
+cd IPL-Win-Predictor
+pip install pandas numpy matplotlib seaborn scikit-learn jupyter
 jupyter notebook
 ```
 
-4. **Open** `ipl_analysis.ipynb` and run all cells top to bottom.
+Open `ipl_win_predictor.ipynb` and run all cells top to bottom.
+
+### Example prediction:
+```python
+predict_winner(
+    team1='Mumbai Indians',
+    team2='Chennai Super Kings',
+    venue='Wankhede Stadium',
+    toss_winner='Mumbai Indians',
+    toss_decision='field'
+)
+# Output: Predicted Winner: Mumbai Indians | Confidence: 66.0%
+```
 
 ---
 
 ## 💡 Key Learnings
 
-- Real-world data is messy — venue names had inconsistencies that needed custom cleaning functions
-- Filtering matters — setting minimum thresholds (500 balls for batting, 60 balls for bowling) makes analysis statistically meaningful
-- Visualisation choices matter — a heatmap tells a venue story that a table never could
-- Domain knowledge helps — understanding cricket made it easier to validate whether results made sense
+- **Feature engineering matters more than algorithm choice.** Switching from team names alone to historical win rates more than doubled accuracy — before even changing the model.
+- **Data leakage is a real risk.** Win rates had to be calculated using only matches *before* the current one (chronological order), or the model would "cheat" by seeing future results.
+- **Real-world data has bugs.** A team name spelling inconsistency ("Rising Pune Supergiant" vs "Rising Pune Supergiants") silently split one team's history into two, hurting model performance — a reminder to always audit categorical data.
+- **Accuracy alone isn't the full story.** The confusion matrix and per-team classification report revealed which teams the model handles well (Rajasthan Royals) versus poorly (short-lived franchises with little data).
+- **51.59% accuracy is meaningful**, not low — cricket has high inherent randomness, and this is ~7x better than the random-guess baseline of 7% across 14 teams.
 
 ---
 
-## 🗺️ What's Next (Phase 2)
+## 🗺️ Future Improvements
 
-- 🤖 Build an IPL match **win predictor** using Machine Learning (Logistic Regression)
-- 📈 Add **season-by-season trend analysis**
-- 🌐 Deploy as an **interactive web dashboard** using Streamlit
+- Fix the team name spelling inconsistency at the source
+- Add player-level features (key players available, recent form)
+- Add head-to-head historical record as a feature
+- Try Gradient Boosting (XGBoost) for comparison
+- Hyperparameter tuning via GridSearchCV
 
 ---
 
@@ -134,7 +143,7 @@ jupyter notebook
 
 **Tejeshwini**  
 B.Tech Data Science Student  
-[GitHub](https://github.com/tejeshwini2425) 
+[GitHub](https://github.com/tejeshwini2425)
 
 ---
 
