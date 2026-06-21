@@ -129,6 +129,11 @@ predict_winner(
 
 ---
 
+## Key Insights
+- [Player] had the highest strike rate among top run scorers (20XX–2017)
+- [Venue] showed the highest win % for chasing teams
+- Teams winning the toss and choosing to bowl first won X% more often in death overs
+
 ## 🗺️ Future Improvements
 
 - Fix the team name spelling inconsistency at the source
